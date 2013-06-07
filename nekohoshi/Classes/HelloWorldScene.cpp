@@ -174,7 +174,7 @@ void HelloWorld::update(float dt) {
             _poles->removeObject(it);
             this->removeChild(pole);
         } else {
-            pole->setPositionX(currentPosX + dt * 50);
+            pole->setPositionX(currentPosX + dt * 60);
         }
     }
     CCARRAY_FOREACH(_cats, it) {
@@ -227,16 +227,26 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
         CCSprite *cat = dynamic_cast<CCSprite *>(jt);
         CCObject *it = NULL;
 
-//        CCARRAY_FOREACH(_poles, it) {
-//            CCSprite *pole = dynamic_cast<CCSprite *>(it);
-//            CCRect catRect = cat->boundingBox();
-//            CCRect poleRect = pole->boundingBox();
-//            if (catRect.intersectsRect(poleRect)) {
-//                _catHanging = true;
-//                _hangingCatIndex = _cats->indexOfObject(jt);
-//                break;
-//            }
-//        }
+        CCARRAY_FOREACH(_poles, it) {
+            CCSprite *pole = dynamic_cast<CCSprite *>(it);
+            CCRect catRect = cat->boundingBox();
+            CCRect poleRect = pole->boundingBox();
+            if (catRect.intersectsRect(poleRect)) {
+                _catHanging = true;
+                _hangingCatIndex = _cats->indexOfObject(jt);
+                float actualMoveDuration =
+                (winSize.width - cat->getPositionX()+ cat->getContentSize().width)/60;
+                CCFiniteTimeAction* moveOut =
+                CCMoveTo::create(actualMoveDuration,
+                                 ccp(winSize.width + cat->getContentSize().width,
+                                     winSize.height*4/5));
+                
+                cat->stopAllActions();
+                cat->runAction(moveOut);
+                
+                break;
+            }
+        }
         if (!_catHanging) {
             float actualFallDuration = 2 * cat->getPositionY()/winSize.height;
             float actualMoveDuration = 2 * (winSize.width - cat->getPositionX())/winSize.width;
