@@ -39,6 +39,17 @@ bool HelloWorld::init()
     pLabel->setPosition( ccp(winSize.width / 2, winSize.height - 20) );
     this->addChild(pLabel, 1);
     
+    CCLabelTTF *scoreLabel = CCLabelTTF::create("Score: ", "Arial", 24);
+    char scoreChar[100];
+    sprintf(scoreChar, "%d", _score);
+    scoreNum = CCLabelTTF::create(scoreChar, "Arial",24);
+    scoreLabel->setPosition(ccp(10 + scoreLabel->getContentSize().width/2,
+                                winSize.height - 20));
+    scoreNum->setPosition(ccp(10 + scoreLabel->getContentSize().width,
+                              winSize.height - 20));
+    this->addChild(scoreLabel);
+    this->addChild(scoreNum);
+    
     CCSprite *pole1 =  CCSprite::create("ShortBlack.png");
     float w1 = pole1->getContentSize().width;
     _poleNum = (int)(winSize.width/w1)+5;
@@ -358,6 +369,10 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
                 pole->setTag(99);
                 cat->stopAllActions();
                 cat->runAction(CCSequence::create(toHang, moveOut, NULL));
+                _score++;
+                char scoreChar[100];
+                sprintf(scoreChar, "%d", _score);
+                scoreNum->setString(scoreChar);
                 break;
             }
         }

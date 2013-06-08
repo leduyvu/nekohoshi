@@ -39,7 +39,11 @@ private:
     CCSize winSize  = CCDirector::sharedDirector()->getWinSize();
     CCArray *_poles = new CCArray;
     CCArray *_cats  = new CCArray;
+    
+    CCLabelTTF *scoreNum;
+    
     int _poleNum;
+    int _score = 0;
 
     bool _catPicked = false;
     CCObject *_pickedCat;
