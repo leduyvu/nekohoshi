@@ -73,11 +73,10 @@ CCSprite *HelloWorld::createPole() {
     strcpy(poleLong[0], "Short");
     strcpy(poleLong[1], "Long");
     
-    int i = rand() % 2;
     int j = rand() % 4;
     
     char str[100];
-    sprintf(str, "%s%s.png", poleLong[i], poleColor[j]);
+    sprintf(str, "Long%s.png", poleColor[j]);
     
     CCSprite *newPole = CCSprite::create(str);
     newPole->setTag(j);
@@ -340,21 +339,20 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
             CCRect catRect = cat->boundingBox();
             CCRect poleRect = pole->boundingBox();
             if (catRect.intersectsRect(poleRect) &&
-                cat->getTag() == pole->getTag()) {
+                cat->getTag() == pole->getTag() && pole->getTag()!=99) {
                 _catHanging = true;
                 _hangingCatIndex = _cats->indexOfObject(_pickedCat);
                 CCFiniteTimeAction* toHang =
-                CCMoveTo::create(0.1,
-                                 ccp(cat->getPositionX(),
-                                     winSize.height*4/5));
+                CCMoveTo::create(0.1,pole->getPosition());
                 float actualMoveDuration =
-                (winSize.width - cat->getPositionX()+ cat->getContentSize().width)/60;
+                (winSize.width - pole->getPositionX()+ cat->getContentSize().width)/60;
                 CCFiniteTimeAction* moveOut =
                 CCMoveTo::create(actualMoveDuration,
                                  ccp(winSize.width + cat->getContentSize().width,
                                      winSize.height*4/5));
                 
                 cat->setTag(99);
+                pole->setTag(99);
                 cat->stopAllActions();
                 cat->runAction(CCSequence::create(toHang, moveOut, NULL));
                 break;
