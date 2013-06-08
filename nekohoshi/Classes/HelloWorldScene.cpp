@@ -343,9 +343,12 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
                 _catHanging = true;
                 _hangingCatIndex = _cats->indexOfObject(_pickedCat);
                 CCFiniteTimeAction* toHang =
-                CCMoveTo::create(0.1,pole->getPosition());
+                CCMoveTo::create(0.1,
+                                 ccp(pole->getPositionX()+10,
+                                     pole->getPositionY()));
                 float actualMoveDuration =
-                (winSize.width - pole->getPositionX()+ cat->getContentSize().width)/60;
+                (winSize.width - pole->getPositionX()+
+                    cat->getContentSize().width - 10)/60;
                 CCFiniteTimeAction* moveOut =
                 CCMoveTo::create(actualMoveDuration,
                                  ccp(winSize.width + cat->getContentSize().width,
@@ -373,7 +376,10 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
                              ccp(winSize.width + cat->getContentSize().width,
                                  cat->getContentSize().height/2));
             
-            CCFiniteTimeAction *runAway = CCSequence::create(fallDown, flipRight, moveOut, NULL);
+            CCFiniteTimeAction *runAway = CCSequence::create(fallDown,
+                                                             flipRight,
+                                                             moveOut,
+                                                             NULL);
             cat->stopAllActions();
             cat->runAction(runAway);
 
