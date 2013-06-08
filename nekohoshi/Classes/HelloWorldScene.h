@@ -40,7 +40,6 @@ private:
     CCArray *_poles = new CCArray;
     CCArray *_cats  = new CCArray;
     int _poleNum;
-    int _catNum = 0;
 
     bool _catPicked = false;
     CCObject *_pickedCat;

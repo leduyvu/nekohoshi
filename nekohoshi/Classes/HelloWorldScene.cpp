@@ -54,7 +54,6 @@ bool HelloWorld::init()
         
     for (int i = 0; i< 5; i++) {
         addCats();
-        _catNum++;
     }
     
     
@@ -81,7 +80,8 @@ CCSprite *HelloWorld::createPole() {
     sprintf(str, "%s%s.png", poleLong[i], poleColor[j]);
     
     CCSprite *newPole = CCSprite::create(str);
-    newPole->setScale(1.5);
+    newPole->setTag(j);
+
     return newPole;
 }
 
@@ -102,7 +102,21 @@ void HelloWorld::addPole() {
 }
 
 void HelloWorld::addCats() {
+    char catColor[4][100];
+    strcpy(catColor[0], "Red");
+    strcpy(catColor[1], "Orange");
+    strcpy(catColor[2], "Black");
+    strcpy(catColor[3], "White");
+    
     CCSprite *cat = CCSprite::create();
+    int i = rand() % 4;
+    cat->setTag(i);
+    
+    if (i==0) cat->setColor(ccRED);
+    if (i==1) cat->setColor(ccORANGE);
+    if (i==2) cat->setColor(ccBLACK);
+    if (i==3) cat->setColor(ccWHITE);
+    
     cat->setScale(1.5);
     
     float minX = cat->getContentSize().width/2 + 25;
@@ -274,18 +288,10 @@ void HelloWorld::update(float dt) {
         if (currentPosX > winSize.width) {
             _cats->removeObject(it);
             this->removeChild(cat);
-            _catNum--;
-            CCLOG("%d", _catNum);
+            addCats();
         }
     }
     
-    if (_catNum < 3) {
-        int catToAdd = rand() % 5 + 1;
-        for (int i=0; i<catToAdd; i++){
-            addCats();
-            _catNum++;
-        }
-    }
     if (_poles->count() < _poleNum) addPole();
 }
 
@@ -333,7 +339,8 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
             CCSprite *pole = dynamic_cast<CCSprite *>(it);
             CCRect catRect = cat->boundingBox();
             CCRect poleRect = pole->boundingBox();
-            if (catRect.intersectsRect(poleRect)) {
+            if (catRect.intersectsRect(poleRect) &&
+                cat->getTag() == pole->getTag()) {
                 _catHanging = true;
                 _hangingCatIndex = _cats->indexOfObject(_pickedCat);
                 CCFiniteTimeAction* toHang =
