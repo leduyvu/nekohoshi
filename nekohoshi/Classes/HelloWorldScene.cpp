@@ -107,15 +107,14 @@ void HelloWorld::addCats() {
     
     float minX = cat->getContentSize().width/2 + 25;
     float maxX = winSize.width - cat->getContentSize().width/2 - 25;
-    float rangeX = maxX - minX;
-    float actualX = (float)rand()/((float)RAND_MAX/rangeX)+minX;
+    float actualX = -100;
     
     float minY = 25;
     float maxY = winSize.height*3/7;
     cat->setPosition(ccp(actualX , minY));
     
-    int minDuration = (int)1.0;
-    int maxDuration = (int)3.0;
+    int minDuration = (int)2.0;
+    int maxDuration = (int)4.0;
     int rangeDuration   = maxDuration - minDuration;
     float actualDuration  = (float)rand()/((float)RAND_MAX/rangeDuration) +
                             minDuration;
@@ -240,12 +239,12 @@ void HelloWorld::struggle(CCSprite *cat){
     cat->stopActionByTag(11);
     CCSpriteFrameCache *catStruggle = CCSpriteFrameCache::sharedSpriteFrameCache();
     catStruggle->addSpriteFramesWithFile("orangeCatGrab.plist");
-    CCArray *catStruggleFrames = CCArray::createWithCapacity(2);
+    CCArray *catStruggleFrames = CCArray::createWithCapacity(1);
     
     CCSpriteFrame *catGrab = catStruggle->spriteFrameByName("CatGrab.png");
-    CCSpriteFrame *catHang = catStruggle->spriteFrameByName("CatHang.png");
+//    CCSpriteFrame *catHang = catStruggle->spriteFrameByName("CatHang.png");
     catStruggleFrames->addObject(catGrab);
-    catStruggleFrames->addObject(catHang);
+//    catStruggleFrames->addObject(catHang);
     
     CCAnimation *catStruggleAnim =
     CCAnimation::createWithSpriteFrames(catStruggleFrames, 0.1f);
@@ -298,7 +297,7 @@ void HelloWorld::ccTouchesBegan(CCSet *touches, CCEvent *event) {
     CCARRAY_FOREACH(_cats, it) {
         CCSprite *cat = dynamic_cast<CCSprite *>(it);
         CCRect catRect = cat->boundingBox();
-        if (catRect.containsPoint(touchLoc) && !_catPicked) {
+        if (catRect.containsPoint(touchLoc) && !_catPicked && cat->getTag()!= 99) {
             cat->stopActionByTag(999);
             _catPicked = true;
             _pickedCatIndex = _cats->indexOfObject(it);
@@ -348,6 +347,7 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
                                  ccp(winSize.width + cat->getContentSize().width,
                                      winSize.height*4/5));
                 
+                cat->setTag(99);
                 cat->stopAllActions();
                 cat->runAction(CCSequence::create(toHang, moveOut, NULL));
                 break;
