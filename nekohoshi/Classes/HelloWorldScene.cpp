@@ -54,6 +54,7 @@ bool HelloWorld::init()
         
     for (int i = 0; i< 5; i++) {
         addCats();
+        _catNum++;
     }
     
     
@@ -80,6 +81,7 @@ CCSprite *HelloWorld::createPole() {
     sprintf(str, "%s%s.png", poleLong[i], poleColor[j]);
     
     CCSprite *newPole = CCSprite::create(str);
+    newPole->setScale(1.5);
     return newPole;
 }
 
@@ -94,7 +96,6 @@ void HelloWorld::addPole() {
     newPole->setPosition(ccp(lastPolePosX -
                              (newPoleWidth + lastPoleWidth) / 2,
                                 winSize.height * 4 / 5));
-    
     this->addChild(newPole);
     _poles->addObject(newPole);
     
@@ -102,13 +103,65 @@ void HelloWorld::addPole() {
 
 void HelloWorld::addCats() {
     CCSprite *cat = CCSprite::create();
+    cat->setScale(1.5);
     
-    char str[100];
+    float minX = cat->getContentSize().width/2 + 25;
+    float maxX = winSize.width - cat->getContentSize().width/2 - 25;
+    float rangeX = maxX - minX;
+    float actualX = (float)rand()/((float)RAND_MAX/rangeX)+minX;
     
+    float minY = 25;
+    float maxY = winSize.height*3/7;
+    cat->setPosition(ccp(actualX , minY));
+    
+    int minDuration = (int)1.0;
+    int maxDuration = (int)3.0;
+    int rangeDuration   = maxDuration - minDuration;
+    float actualDuration  = (float)rand()/((float)RAND_MAX/rangeDuration) +
+                            minDuration;
+    
+    CCFiniteTimeAction* moveRight =
+    CCMoveTo::create(actualDuration, ccp(maxX, minY));
+    moveRight->setTag(10);
+    CCFiniteTimeAction *moveUp =
+    CCMoveTo::create(actualDuration/4,ccp(maxX, maxY));
+    moveUp->setTag(10);
+    CCFiniteTimeAction *moveLeft =
+    CCMoveTo::create(actualDuration,ccp(minX, maxY));
+    moveLeft->setTag(10);
+    CCFiniteTimeAction *moveDown =
+    CCMoveTo::create(actualDuration/4,ccp(minX, minY));
+    moveDown->setTag(10);
+    
+    CCFiniteTimeAction *goRightAnimation =
+    CCCallFuncN::create(this, callfuncN_selector(HelloWorld::toRightBottom));
+    CCFiniteTimeAction *goUpAnimation =
+    CCCallFuncN::create(this, callfuncN_selector(HelloWorld::toRightTop));
+    CCFiniteTimeAction *goLeftAnimation =
+    CCCallFuncN::create(this, callfuncN_selector(HelloWorld::toLeftTop));
+    CCFiniteTimeAction *goDownAnimation =
+    CCCallFuncN::create(this, callfuncN_selector(HelloWorld::toLeftBottom));
+    
+    
+    CCFiniteTimeAction* moveForever =
+        CCRepeatForever::create(CCSequence::create(goRightAnimation, moveRight,
+                                                   goUpAnimation, moveUp,
+                                                   goLeftAnimation, moveLeft,
+                                                   goDownAnimation, moveDown,
+                                                   NULL));
+    
+    cat->runAction(moveForever);
+    this->addChild(cat, 2);
+    _cats->addObject(cat);
+}
+
+
+void HelloWorld::toRightBottom(CCSprite *cat) {
+    cat->stopActionByTag(11);
     CCSpriteFrameCache *catRight = CCSpriteFrameCache::sharedSpriteFrameCache();
     catRight->addSpriteFramesWithFile("orangeCatRight.plist");
     CCArray *catRightFrames = CCArray::createWithCapacity(4);
-    
+    char str[100];
     for (int i = 5; i<= 8; i++) {
         sprintf(str, "CatSide%d.png", i);
         CCSpriteFrame *catRightFrame = catRight->spriteFrameByName(str);
@@ -119,49 +172,88 @@ void HelloWorld::addCats() {
     CCAnimation::createWithSpriteFrames(catRightFrames, 0.1f);
     CCFiniteTimeAction *catRightAnimate =
     CCRepeatForever::create(CCAnimate::create(catRightAnim));
+    catRightAnimate->setTag(11);
     cat->runAction(catRightAnimate);
-    
-    float actualX = (rand() % 100) + 50;
-    float actualY = rand() % 10 + 25;
-    cat->setPosition(ccp(actualX , actualY));
-    
-    int minDuration = (int)2.0;
-    int maxDuration = (int)6.0;
-    int rangeDuration   = maxDuration - minDuration;
-    float actualDuration  = (float)rand()/((float)RAND_MAX/rangeDuration) +
-                            minDuration;
-    
-    CCFiniteTimeAction* moveRight =
-    CCMoveTo::create(actualDuration,
-                     ccp(winSize.width - cat->getContentSize().width/2 -10, actualY));
-    moveRight->setTag(1);
-    CCFiniteTimeAction *moveLeft =
-    CCMoveTo::create(actualDuration,ccp(cat->getContentSize().width/2 + 10, actualY));
-    moveLeft->setTag(2);
-    
-    CCFiniteTimeAction *catFlipTrue = CCFlipX::create(true);
-    CCFiniteTimeAction *catFlipFalse = CCFlipX::create(false);
-    CCFiniteTimeAction* moveForever =
-        CCRepeatForever::create(CCSequence::create(moveRight,
-                                                   catFlipTrue,
-                                                   moveLeft,
-                                                   catFlipFalse,
-                                                   NULL));
-    moveForever->setTag(999);
-    
-    cat->runAction(moveForever);
-    this->addChild(cat, 2);
-    _cats->addObject(cat);
 }
 
-void HelloWorld::checkCats() {
-    int catNum = _cats->count();
-    if (catNum < 4) {
-        int catToAdd = rand() % 3;
-        for (int i=0; i<=catToAdd; i++){
-            addCats();
-        }
+void HelloWorld::toRightTop(CCSprite *cat) {
+    cat->stopActionByTag(11);
+    CCSpriteFrameCache *catUp = CCSpriteFrameCache::sharedSpriteFrameCache();
+    catUp->addSpriteFramesWithFile("orangeCatBack.plist");
+    CCArray *catUpFrames = CCArray::createWithCapacity(4);
+    char str[100];
+    for (int i = 1; i<= 4; i++) {
+        sprintf(str, "CatBack%d.png", i);
+        CCSpriteFrame *catUpFrame = catUp->spriteFrameByName(str);
+        catUpFrames->addObject(catUpFrame);
     }
+    
+    CCAnimation *catUpAnim =
+    CCAnimation::createWithSpriteFrames(catUpFrames, 0.1f);
+    CCFiniteTimeAction *catUpAnimate =
+    CCRepeatForever::create(CCAnimate::create(catUpAnim));
+    catUpAnimate->setTag(11);
+    cat->runAction(catUpAnimate);
+}
+
+void HelloWorld::toLeftTop(CCSprite *cat) {
+    cat->stopActionByTag(11);
+    CCSpriteFrameCache *catLeft = CCSpriteFrameCache::sharedSpriteFrameCache();
+    catLeft->addSpriteFramesWithFile("orangeCatLeft.plist");
+    CCArray *catLeftFrames = CCArray::createWithCapacity(4);
+    char str[100];
+    for (int i = 1; i<= 4; i++) {
+        sprintf(str, "CatSide%d.png", i);
+        CCSpriteFrame *catLeftFrame = catLeft->spriteFrameByName(str);
+        catLeftFrames->addObject(catLeftFrame);
+    }
+    
+    CCAnimation *catLeftAnim =
+    CCAnimation::createWithSpriteFrames(catLeftFrames, 0.1f);
+    CCFiniteTimeAction *catLeftAnimate =
+    CCRepeatForever::create(CCAnimate::create(catLeftAnim));
+    catLeftAnimate->setTag(11);
+    cat->runAction(catLeftAnimate);
+}
+
+void HelloWorld::toLeftBottom(CCSprite *cat) {
+    cat->stopActionByTag(11);
+    CCSpriteFrameCache *catDown = CCSpriteFrameCache::sharedSpriteFrameCache();
+    catDown->addSpriteFramesWithFile("orangeCatFront.plist");
+    CCArray *catDownFrames = CCArray::createWithCapacity(4);
+    char str[100];
+    for (int i = 1; i<= 4; i++) {
+        sprintf(str, "CatFront%d.png", i);
+        CCSpriteFrame *catDownFrame = catDown->spriteFrameByName(str);
+        catDownFrames->addObject(catDownFrame);
+    }
+    
+    CCAnimation *catDownAnim =
+    CCAnimation::createWithSpriteFrames(catDownFrames, 0.1f);
+    CCFiniteTimeAction *catDownAnimate =
+    CCRepeatForever::create(CCAnimate::create(catDownAnim));
+    catDownAnimate->setTag(11);
+    cat->runAction(catDownAnimate);
+}
+
+void HelloWorld::struggle(CCSprite *cat){
+    cat->stopActionByTag(11);
+    CCSpriteFrameCache *catStruggle = CCSpriteFrameCache::sharedSpriteFrameCache();
+    catStruggle->addSpriteFramesWithFile("orangeCatGrab.plist");
+    CCArray *catStruggleFrames = CCArray::createWithCapacity(2);
+    
+    CCSpriteFrame *catGrab = catStruggle->spriteFrameByName("CatGrab.png");
+    CCSpriteFrame *catHang = catStruggle->spriteFrameByName("CatHang.png");
+    catStruggleFrames->addObject(catGrab);
+    catStruggleFrames->addObject(catHang);
+    
+    CCAnimation *catStruggleAnim =
+    CCAnimation::createWithSpriteFrames(catStruggleFrames, 0.1f);
+    CCFiniteTimeAction *catStruggleAnimate =
+    CCRepeatForever::create(CCAnimate::create(catStruggleAnim));
+    catStruggleAnimate->setTag(11);
+    cat->runAction(catStruggleAnimate);
+
 }
 
 void HelloWorld::update(float dt) {
@@ -181,12 +273,20 @@ void HelloWorld::update(float dt) {
         CCSprite *cat = dynamic_cast<CCSprite *>(it);
         float currentPosX = cat->getPositionX();
         if (currentPosX > winSize.width) {
-            checkCats();
             _cats->removeObject(it);
             this->removeChild(cat);
+            _catNum--;
+            CCLOG("%d", _catNum);
         }
     }
     
+    if (_catNum < 3) {
+        int catToAdd = rand() % 5 + 1;
+        for (int i=0; i<catToAdd; i++){
+            addCats();
+            _catNum++;
+        }
+    }
     if (_poles->count() < _poleNum) addPole();
 }
 
@@ -202,6 +302,7 @@ void HelloWorld::ccTouchesBegan(CCSet *touches, CCEvent *event) {
             cat->stopActionByTag(999);
             _catPicked = true;
             _pickedCatIndex = _cats->indexOfObject(it);
+            _pickedCat = it;
         }
 
     }
@@ -212,8 +313,11 @@ void HelloWorld::ccTouchesMoved(CCSet* touches, CCEvent* event){
     CCPoint location = touch->getLocationInView();
     location = CCDirector::sharedDirector()->convertToGL(location);
     if (_catPicked){
-        CCObject *it = _cats->objectAtIndex(_pickedCatIndex);
-        CCSprite *cat = dynamic_cast<CCSprite *>(it);
+        CCSprite *cat = dynamic_cast<CCSprite *>(_pickedCat);
+        cat->stopAllActions();
+        CCFiniteTimeAction *catStruggle=
+        CCCallFuncN::create(this, callfuncN_selector(HelloWorld::struggle));
+        cat->runAction(CCSequence::create(catStruggle, NULL));
         cat->setPosition(location);
     }
 }
@@ -223,8 +327,7 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
     _catFalling = false;
 
     if (_catPicked) {
-        CCObject *jt = _cats->objectAtIndex(_pickedCatIndex);
-        CCSprite *cat = dynamic_cast<CCSprite *>(jt);
+        CCSprite *cat = dynamic_cast<CCSprite *>(_pickedCat);
         CCObject *it = NULL;
 
         CCARRAY_FOREACH(_poles, it) {
@@ -233,7 +336,11 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
             CCRect poleRect = pole->boundingBox();
             if (catRect.intersectsRect(poleRect)) {
                 _catHanging = true;
-                _hangingCatIndex = _cats->indexOfObject(jt);
+                _hangingCatIndex = _cats->indexOfObject(_pickedCat);
+                CCFiniteTimeAction* toHang =
+                CCMoveTo::create(0.1,
+                                 ccp(cat->getPositionX(),
+                                     winSize.height*4/5));
                 float actualMoveDuration =
                 (winSize.width - cat->getPositionX()+ cat->getContentSize().width)/60;
                 CCFiniteTimeAction* moveOut =
@@ -242,28 +349,29 @@ void HelloWorld::ccTouchesEnded(CCSet* touches, CCEvent* event){
                                      winSize.height*4/5));
                 
                 cat->stopAllActions();
-                cat->runAction(moveOut);
-                
+                cat->runAction(CCSequence::create(toHang, moveOut, NULL));
                 break;
             }
         }
         if (!_catHanging) {
-            float actualFallDuration = 2 * cat->getPositionY()/winSize.height;
+            float actualFallDuration = cat->getPositionY()/winSize.height;
             float actualMoveDuration = 2 * (winSize.width - cat->getPositionX())/winSize.width;
             
-            CCFiniteTimeAction *noFlip =  CCFlipX::create(false);
             CCFiniteTimeAction* fallDown =
             CCMoveTo::create(actualFallDuration,
                              ccp(cat->getPositionX(),
                                  cat->getContentSize().height/2));
+            CCFiniteTimeAction *flipRight =
+            CCCallFuncN::create(this, callfuncN_selector(HelloWorld::toRightBottom));
             CCFiniteTimeAction* moveOut =
             CCMoveTo::create(actualMoveDuration,
                              ccp(winSize.width + cat->getContentSize().width,
                                  cat->getContentSize().height/2));
             
-            CCFiniteTimeAction *runAway = CCSequence::create(fallDown, noFlip, moveOut, NULL);
-            
+            CCFiniteTimeAction *runAway = CCSequence::create(fallDown, flipRight, moveOut, NULL);
+            cat->stopAllActions();
             cat->runAction(runAway);
+
         }
 
     }

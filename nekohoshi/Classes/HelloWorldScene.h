@@ -18,6 +18,13 @@ public:
     void addCats();
     void checkCats();
     
+    void toRightBottom(CCSprite *cat);
+    void toRightTop(CCSprite *cat);
+    void toLeftTop(CCSprite *cat);
+    void toLeftBottom(CCSprite *cat);
+    void struggle(CCSprite *cat);
+    
+    
     CCSprite *createPole();
     
     virtual void ccTouchesBegan(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
@@ -33,9 +40,10 @@ private:
     CCArray *_poles = new CCArray;
     CCArray *_cats  = new CCArray;
     int _poleNum;
-    
+    int _catNum = 0;
 
     bool _catPicked = false;
+    CCObject *_pickedCat;
     int _pickedCatIndex;
     
     bool _catHanging = false;
